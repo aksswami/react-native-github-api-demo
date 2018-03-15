@@ -1,26 +1,28 @@
 import React, { Component } from 'react'
-import { AppRegistry, View, Text, ActivityIndicator, FlatList, StyleSheet } from 'react-native'
+import { AppRegistry, View, Text, TextInput, ActivityIndicator, FlatList, StyleSheet } from 'react-native'
+import { StackNavigator } from 'react-navigation';
 
 const extractKey = ({id}) => id
-const abc = [
-  {id: 0, name: 'View'},
-{id: 1, name: 'Text'},
-{id: 2, name: 'Image'},
-{id: 3, name: 'ScrollView'},
-{id: 4, name: 'ListView'},
+class App extends Component {
 
-]
-export default class App extends Component {
+  static navigationOptions = {
+    title: 'Github Repos',
+  };
 
   state = {
     loading: true,
     error: false,
     repos: [],
+    username: "aksswami"
   }
 
-  componentWillMount = async () => {
+  componentWillMount = () => {
+    this.searchSubmit()
+  }
+
+  searchSubmit = async () => {
     try {
-      const response = await fetch('https://api.github.com/users/aksswami/repos')
+      const response = await fetch('https://api.github.com/users/'+ this.state.username +'/repos')
       const repos = await response.json()
 
       this.setState({loading: false, repos})
@@ -52,39 +54,56 @@ export default class App extends Component {
 
   render() {
     const {repos, loading, error} = this.state
-
-    if (loading) {
-      return (
-        <View style={styles.center}>
-          <ActivityIndicator animating={true} />
-        </View>
-      )
-    }
-
-    if (error) {
-      return (
-        <View style={styles.center}>
-          <Text>
-            Failed to load repos!
-          </Text>
-        </View>
-      )
-    }
-
     return (
-      <FlatList
-        style={styles.container}
-        data={repos}
-        renderItem={this.renderItem}
-        keyExtractor={extractKey}
-        />
+          <View style={styles.center}>
+          <TextInput
+            style={{height: 40, padding: 5, margin: 5}}
+            onChangeText={(username) => this.setState({username})}
+            returnKeyType='search'
+            placeholder='github username'
+            onSubmitEditing={this.searchSubmit}
+            clearButtonMode="while-editing"
+          />
+          <View style={{height: 1, backgroundColor: 'gray'}}/>
+          <FlatList
+            style={styles.listContainer}
+            data={repos}
+            renderItem={this.renderItem}
+            keyExtractor={extractKey}
+            />
+</View>
+      // if (loading) {
+      //     <View style={styles.center}>
+      //       <ActivityIndicator animating={true} />
+      //     </View>
+      // } else if (error) {
+      //     <View style={styles.center}>
+      //       <Text>
+      //         Failed to load repos!
+      //       </Text>
+      //     </View>
+      // } else {
+
+
+
+      // </View>
+
     )
   }
 }
 
+export default StackNavigator({
+  Home: {
+    screen: App
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  listContainer: {
+    flex: 1
   },
   repo: {
     flexDirection: 'row',
@@ -107,9 +126,7 @@ const styles = StyleSheet.create({
     color: 'lightgray',
   },
   center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flex: 1
   },
   text: {
     padding: 15,
